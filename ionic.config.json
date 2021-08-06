@@ -1,0 +1,7 @@
+{
+  "name": "downloadFile",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular"
+}
