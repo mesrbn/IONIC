@@ -8,6 +8,8 @@
     "start": "ng serve",
     "build": "npx jetifier && ng build",
     "android-build": "npx jetifier && ng build && ionic capacitor build android",
+    "ios:sync": "ionic cap sync ios",
+    "ios:open": "ionic cap open ios",
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e"
@@ -26,6 +28,7 @@
     "@capacitor/core": "3.1.2",
     "@capacitor/filesystem": "^1.0.2",
     "@capacitor/haptics": "1.0.2",
+    "@capacitor/ios": "3.1.2",
     "@capacitor/keyboard": "1.0.2",
     "@capacitor/status-bar": "1.0.2",
     "@capacitor/storage": "^1.0.3",
