@@ -3,6 +3,8 @@ import {HttpClient, HttpEventType} from '@angular/common/http';
 import {FileOpener} from '@ionic-native/file-opener/ngx';
 import {Storage} from '@capacitor/storage';
 import {Directory, Filesystem} from '@capacitor/filesystem';
+import write_blob from 'capacitor-blob-writer';
+import {Capacitor} from '@capacitor/core';
 
 const FILE_KEY = 'files';
 
@@ -67,25 +69,56 @@ export class HomePage {
         this.downloadProgress = 0;
 
         const name = this.downloadUrl.substr(this.downloadUrl.lastIndexOf('/') + 1);
-        const base64 = await this.convertBlobToBase64(event.body) as string;
-        const savedFile = await Filesystem.writeFile({
+        // const base64 = await this.convertBlobToBase64(event.body) as string;
+        // const savedFile = await Filesystem.writeFile({
+        //   path: name,
+        //   data: base64,
+        //   directory: Directory.Documents,
+        // });
+        const savedFile = write_blob({
           path: name,
-          data: base64,
           directory: Directory.Documents,
-        });
+          blob: event.body,
+          recursive: true,
+          // eslint-disable-next-line @typescript-eslint/no-shadow,@typescript-eslint/naming-convention,prefer-arrow/prefer-arrow-functions
+          on_fallback(error) {
+            console.error('cannot save the file ', error);
+          }
+        })
+          .then(myVideoUri => {
+          console.log('append child is started!');
+          console.log(myVideoUri);
+          const videoElement = document.createElement('video');
+          videoElement.src = Capacitor.convertFileSrc(myVideoUri);
+          document.body.appendChild(videoElement);
+          console.log('append file is finished!');
+            const path = myVideoUri;
+            const mimeType = this.getMimetype(name);
+            console.log('saved: ', savedFile);
+            console.log('path: ', path);
+            this.fileOpener.open(path, mimeType)
+              .then(()=>console.log('FIle is opened'))
+              .catch(err => console.log('Error opening file', err));
+            this.myFiles.unshift(path);
+            Storage.set({
+              key: FILE_KEY,
+              value: JSON.stringify(this.myFiles)
+            });
+        })
+          .catch(e=>console.log('writing the file was unsuccessful with error message : ', e));
         console.log(`downloading and saving the file took: ${(performance.now()-t0)/1000} seconds`);
-        const path = savedFile.uri;
-        const mimeType = this.getMimetype(name);
-        console.log('saved: ', savedFile);
-        console.log('path: ', path);
-        this.fileOpener.open(path, mimeType)
-          .then(()=>console.log('FIle is opened'))
-          .catch(error => console.log('Error opening file', error));
-        this.myFiles.unshift(path);
-        Storage.set({
-          key: FILE_KEY,
-          value: JSON.stringify(this.myFiles)
-        });
+        // const path = savedFile.uri;
+        // const mimeType = this.getMimetype(name);
+        // console.log('saved: ', savedFile);
+        // console.log('path: ', path);
+        // this.fileOpener.open(path, mimeType)
+        //   .then(()=>console.log('FIle is opened'))
+        //   .catch(err => console.log('Error opening file', err));
+        // this.myFiles.unshift(path);
+        // Storage.set({
+        //   key: FILE_KEY,
+        //   value: JSON.stringify(this.myFiles)
+        // });
       }
     });
   }
